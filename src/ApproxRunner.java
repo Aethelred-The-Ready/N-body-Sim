@@ -24,47 +24,34 @@ public class ApproxRunner {
 	final static double radScale = 10;
 	//for non-log EM use 100000
 	//for log EM use 9
+	//for log SEM use 10
 	static int count = 0;
 	
 	public static void main(String[] args) {
-		//double Max = dist(Earth, Luna);
-		//double Min = dist(Earth, Luna);
 		oBs.add(Sol);
 		oBs.add(Earth);
 		oBs.add(Mars);
 		//oBs.add(Luna);
-		//System.out.print(grav(Earth, Luna)[0]);
 		
 		render();
 		
 		while(true) {
 			run();
-			//if(Max < dist(Earth, Luna)) {
-			//	Max = dist(Earth, Luna);
-			//}
-			//if(Min > dist(Earth, Luna)) {
-			//	Min = dist(Earth, Luna);
-			//}
 			count++;
 			if(inBound(getAng(Sol, Mars), 0, 0.000001)) {
 				//System.out.println("Time: " + (count*timeCon));
-				//System.out.println("Ap: " + Max + "\n" + "Pe: " + Min);
-				//System.out.println("Earthvel: " + Earth.getVel()[0] + ", " + Earth.getVel()[0]);
 			}
-			//if(count%1000 == 0)
-			//	System.out.println(Earth.getPos()[1]);
 			j.repaint();
-			//try {
-			//	Thread.sleep(10);
-			//} catch (Exception e) {}
 		}
 		
 	}
 	
+	//just checks if a is within r of b
 	private static boolean inBound(double a, double b, double r) {
 		return (Math.abs(a-b) < r);
 	}
 
+	//calculates the gravity from every body to every other one and applies it
 	public static void run() {
 		double[] acc = new double[2];
 		double[] accg = new double[2];
@@ -74,7 +61,8 @@ public class ApproxRunner {
 					accg = grav(oBs.get(i), oBs.get(k));
 					acc[0] += accg[0];
 					acc[1] += accg[1];
-					System.out.println(oBs.get(k).getName() + " -> " + oBs.get(i).getName() + " " + accg[0] + " " + accg[1]);
+					//This prints out the acceleration caused by body 1 to body 2
+					//System.out.println(oBs.get(k).getName() + " -> " + oBs.get(i).getName() + " " + accg[0] + " " + accg[1]);
 				}
 			}
 			oBs.get(i).applyAcc(acc, timeCon);
@@ -82,6 +70,7 @@ public class ApproxRunner {
 		}
 	}
 	
+	//calculates the gravitational acceleration vector's x and y components from body 1 to body 2
 	private static double[] grav(OrbitalBody oB, OrbitalBody oB2) {
 		double ang = Math.PI - Math.atan2((oB.getPos()[1] - oB2.getPos()[1]),(oB.getPos()[0] - oB2.getPos()[0]));
 		//System.out.println("angle: " + ang/Math.PI);
@@ -91,10 +80,12 @@ public class ApproxRunner {
 		return tr;
 	}
 	
+	//calculates the angle between 2 bodies
 	public static double getAng(OrbitalBody oB, OrbitalBody oB2) {
 		return Math.PI - Math.atan2((oB.getPos()[1] - oB2.getPos()[1]),(oB.getPos()[0] - oB2.getPos()[0]));
 	}
 
+	//calculates the distance between 2 bodies
 	private static double dist(OrbitalBody oB, OrbitalBody oB2) {
 		return Math.sqrt(Math.pow((oB2.getPos()[1] - oB.getPos()[1]), 2) + Math.pow((oB2.getPos()[0] - oB.getPos()[0]), 2));
 	}
