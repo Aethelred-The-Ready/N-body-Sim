@@ -11,8 +11,8 @@ public class ApproxRunner {
 	static JPanel j;
 	static ArrayList<OrbitalBody> oBs = new ArrayList<OrbitalBody>();
 	//Earth Moon
-	//static OrbitalBody Earth = new OrbitalBody(3.986004418E14, 6371000, 0, 0, 0, -1.33091E1, Color.GREEN);
-	//static OrbitalBody Luna = new OrbitalBody(4.9048695E12, 1737100, 362600000, 0, 0, 1082, new Color(127,127,127));
+	//static OrbitalBody Earth = new OrbitalBody("Earth", 3.986004418E14, 6371000, 0, 0, 0, -1.33091E1, Color.GREEN);
+	//static OrbitalBody Luna = new OrbitalBody("Luna", 4.9048695E12, 1737100, 362600000, 0, 0, 1082, new Color(127,127,127));
 	//Sun Earth Mars
 	static OrbitalBody Sol = new OrbitalBody("Sol", 1.32712440018E20, 695700000, 0, 0, 0, 0, Color.YELLOW);
 	static OrbitalBody Earth = new OrbitalBody("Earth", 3.986004418E14, 6371000, 147.09E9, 0, 0, 30290, Color.GREEN);
@@ -74,7 +74,7 @@ public class ApproxRunner {
 	
 	//calculates the gravitational acceleration vector's x and y components from body 1 to body 2
 	private static double[] grav(OrbitalBody oB, OrbitalBody oB2) {
-		double ang = Math.PI - Math.atan2((oB.getPos()[1] - oB2.getPos()[1]),(oB.getPos()[0] - oB2.getPos()[0]));
+		double ang = Math.atan2((oB.getPos()[1] - oB2.getPos()[1]),-(oB.getPos()[0] - oB2.getPos()[0]));
 		double acc = (oB2.getGMass())/(Math.pow(dist(oB,oB2), 2));
 		double[] tr= {acc*Math.cos(ang),-acc*Math.sin(ang)};
 		return tr;
@@ -82,7 +82,7 @@ public class ApproxRunner {
 	
 	//calculates the angle between 2 bodies
 	public static double getAng(OrbitalBody oB, OrbitalBody oB2) {
-		return Math.PI - Math.atan2((oB.getPos()[1] - oB2.getPos()[1]),(oB.getPos()[0] - oB2.getPos()[0]));
+		return Math.atan2((oB.getPos()[1] - oB2.getPos()[1]),-(oB.getPos()[0] - oB2.getPos()[0]));
 	}
 
 	//calculates the distance between 2 bodies
