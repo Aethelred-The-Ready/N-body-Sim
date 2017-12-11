@@ -62,7 +62,9 @@ public class ApproxRunner {
 					acc[0] += accg[0];
 					acc[1] += accg[1];
 					//This prints out the acceleration caused by body 1 to body 2
-					//System.out.println(oBs.get(k).getName() + " -> " + oBs.get(i).getName() + " " + accg[0] + " " + accg[1]);
+					if(count%10000 == 0) {
+						System.out.println(oBs.get(k).getName() + " -> " + oBs.get(i).getName() + " " + accg[0] + " " + accg[1]);
+					}
 				}
 			}
 			oBs.get(i).applyAcc(acc, timeCon);
@@ -73,10 +75,8 @@ public class ApproxRunner {
 	//calculates the gravitational acceleration vector's x and y components from body 1 to body 2
 	private static double[] grav(OrbitalBody oB, OrbitalBody oB2) {
 		double ang = Math.PI - Math.atan2((oB.getPos()[1] - oB2.getPos()[1]),(oB.getPos()[0] - oB2.getPos()[0]));
-		//System.out.println("angle: " + ang/Math.PI);
 		double acc = (oB2.getGMass())/(Math.pow(dist(oB,oB2), 2));
 		double[] tr= {acc*Math.cos(ang),-acc*Math.sin(ang)};
-		//System.out.println("acc: " + tr[0] + " " + tr[1]);
 		return tr;
 	}
 	
@@ -106,13 +106,12 @@ public class ApproxRunner {
 					oBcur = oBs.get(i);
 					p.setColor(oBcur.getCol());
 					//log radius calculator
-					rad = (int) (Math.log10(oBcur.getRad())*radScale);
+					rad = (int) (Math.log10(oBcur.getRad()/10000)*radScale);
 					//non-log radius calculator
 					//rad = (int) (oBcur.getRad()/radScale);
 					x = scale(oBcur.getPos()[0], rad);
 					y = scale(oBcur.getPos()[1], rad);
 					p.fillOval(x, y, rad, rad);
-					//System.out.println(scale(oBcur.getPos()[0],rad) + " " + scale(oBcur.getPos()[1],rad));
 				}
 			}
 		};
@@ -126,7 +125,6 @@ public class ApproxRunner {
 	}
 
 	protected static int scale(double d, double r) {
-		//System.out.println((int) ((Math.log10((d+1)*225)*1.5)*posScale + 500 - r/2));
 		//log
 		//return (int) (((Math.abs(d)/d)*Math.log10(Math.abs(d) + 1)*posScale) + 500 - r/2);
 		//non-log
