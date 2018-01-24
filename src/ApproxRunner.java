@@ -1,58 +1,61 @@
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.io.File;
+import java.util.Scanner;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class ApproxRunner {
 
+public class ApproxRunner {
+	
 	static JPanel j;
 	static ArrayList<OrbitalBody> oBs = new ArrayList<OrbitalBody>();
-	//Earth Moon
-	//static OrbitalBody Earth = new OrbitalBody("Earth", 3.986004418E14, 6371000, 0, 0, 0, -1.33091E1, Color.GREEN);
-	//static OrbitalBody Luna = new OrbitalBody("Luna", 4.9048695E12, 1737100, 362600000, 0, 0, 1082, new Color(127,127,127));
-	//Sun Earth Mars
-	static OrbitalBody Sol = new OrbitalBody("Sol", 1.32712440018E20, 695700000, 0, 0, 0, 0, Color.YELLOW);
-	static OrbitalBody Earth = new OrbitalBody("Earth", 3.986004418E14, 6371000, 147.09E9, 0, 0, 30290, Color.GREEN);
-	static OrbitalBody Mars = new OrbitalBody("Mars", 4.282837E13, 3389500, 206.62E9, 0, 0, 26500, Color.RED);
 	final static double timeCon = 1;
 	final static double posScale = 0.000000001d;
 	//for non-log EM use 0.000001d
 	//for non-log SEM use 0.000000001d
+	//for non-log MPD use 0.000001d
 	final static double radScale = 10;
-	//for non-log EM use 100000
 	//for log EM use 9
 	//for log SEM use 10
+	//for log MPD use 15
 	static int count = 0;
 	
 	public static void main(String[] args) {
-		oBs.add(Sol);
-		oBs.add(Earth);
-		oBs.add(Mars);
-		//oBs.add(Luna);
+		Scanner f;
+		try {
+			f = new Scanner(new File("Solar_System.txt"));
+		}catch(Exception e){
+			System.out.print(e);
+			f = new Scanner("Not working");
+		}
+		while(f.hasNextLine()) {
+			oBs.add(new OrbitalBody(f.next(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
+		}
 		
 		render();
 		
 		while(true) {
 			run();
 			count++;
-			if(inBound(getAng(Sol, Mars), 0, 0.000001)) {
-				//System.out.println("Time: " + (count*timeCon));
-			}
 			j.repaint();
+			//try {
+			//	Thread.sleep(1);
+			//} catch (Exception e) {}
 		}
 		
 	}
 	
 	//just checks if a is within r of b
 	private static boolean inBound(double a, double b, double r) {
-		return (Math.abs(a-b) < r);
+		return (Math.abs(a-b) <= r);
 	}
 
 	//calculates the gravity from every body to every other one and applies it
-	public static void run() {
+	private static void run() {
 		double[] acc = new double[2];
 		double[] accg = new double[2];
 		for(int i = 0; i < oBs.size(); i++) {
@@ -74,14 +77,15 @@ public class ApproxRunner {
 	
 	//calculates the gravitational acceleration vector's x and y components from body 1 to body 2
 	private static double[] grav(OrbitalBody oB, OrbitalBody oB2) {
-		double ang = Math.atan2((oB.getPos()[1] - oB2.getPos()[1]),-(oB.getPos()[0] - oB2.getPos()[0]));
-		double acc = (oB2.getGMass())/(Math.pow(dist(oB,oB2), 2));
-		double[] tr= {acc*Math.cos(ang),-acc*Math.sin(ang)};
+		double[] ds = {oB2.getPos()[0] - oB.getPos()[0],oB2.getPos()[1] - oB.getPos()[1]};
+		double dtot = dist(oB,oB2);
+		double acc = (oB2.getGMass())/(dtot*dtot);
+		double[] tr= {acc*ds[0]/dtot,acc*ds[1]/dtot};
 		return tr;
 	}
 	
 	//calculates the angle between 2 bodies
-	public static double getAng(OrbitalBody oB, OrbitalBody oB2) {
+	private static double getAng(OrbitalBody oB, OrbitalBody oB2) {
 		return Math.atan2((oB.getPos()[1] - oB2.getPos()[1]),-(oB.getPos()[0] - oB2.getPos()[0]));
 	}
 
@@ -90,7 +94,7 @@ public class ApproxRunner {
 		return Math.sqrt(Math.pow((oB2.getPos()[1] - oB.getPos()[1]), 2) + Math.pow((oB2.getPos()[0] - oB.getPos()[0]), 2));
 	}
 
-	public static void render(){
+	private static void render(){
 		JFrame frame = new JFrame("Orbital approximator");
 		
 		j = new JPanel(){
@@ -106,12 +110,14 @@ public class ApproxRunner {
 					oBcur = oBs.get(i);
 					p.setColor(oBcur.getCol());
 					//log radius calculator
-					rad = (int) (Math.log10(oBcur.getRad()/10000)*radScale);
+					rad = (int) (Math.log10(oBcur.getRad()/100)*radScale);
 					//non-log radius calculator
 					//rad = (int) (oBcur.getRad()/radScale);
 					x = scale(oBcur.getPos()[0], rad);
 					y = scale(oBcur.getPos()[1], rad);
 					p.fillOval(x, y, rad, rad);
+					//p.setColor(Color.YELLOW);
+					//p.drawOval(x - 50, y - 50, rad + 100, rad + 100);
 				}
 			}
 		};
