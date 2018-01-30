@@ -55,4 +55,8 @@ public class OrbitalBody {
 	public String getName() {
 		return name;
 	}
+	
+	public String toString() {
+		return name + " " + GM + " " + radius + " " + pos[0] + " " + pos[1] + " " + vel[0] + " " + vel[1] + " " + col.getRed() + " " + col.getGreen() + " " + col.getBlue();
+	}
 }
