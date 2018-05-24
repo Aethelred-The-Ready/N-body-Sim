@@ -123,12 +123,14 @@ public class ApproxRunner {
 		molsInit();
 		radScale = f.nextDouble();
 		posScale = f.nextDouble();
+		int t = 0;
 		while(f.hasNextLine()) {
 			String name = f.next();
 			if(name.charAt(0) == '\\')
 				f.nextLine();
 			else
 				oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
+			System.out.println(t + ": " + oBs.get(t++));
 		}
 		//String name = f.next();
 		//oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
@@ -191,13 +193,14 @@ public class ApproxRunner {
 		for(int i = 0; i < oBs.size(); i++) {
 			for(int k = 0; k < oBs.size(); k++) {
 				if(k != i) {
+					//System.out.println("{" + i + ", " + k + "}");
 					oBs.get(i).applyAcc(grav(oBs.get(i), oBs.get(k)), timeCon);
-					if(count%10000 == 0) {
-						if(dist(oBs.get(i), oBs.get(k)) < oBs.get(i).getRad() + oBs.get(k).getRad()) {
-							coll(oBs.get(i), oBs.get(k));
-							oBs.remove(k);
-						}
-					}
+					//if(count%10000 == 0) {
+					//	if(dist(oBs.get(i), oBs.get(k)) < oBs.get(i).getRad() + oBs.get(k).getRad()) {
+					//		coll(oBs.get(i), oBs.get(k));
+					//		oBs.remove(k);
+					//	}
+					//}
 				}
 			}
 			//Rocket.applyAcc(grav(Rocket, oBs.get(i)), timeCon);
