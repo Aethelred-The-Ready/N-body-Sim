@@ -115,7 +115,7 @@ public class ApproxRunner {
 	public static void main(String[] args) {
 		Scanner f;
 		try {
-			f = new Scanner(new File("Solar_System.txt"));
+			f = new Scanner(new File("Saturn_System.txt"));
 		}catch(Exception e){
 			System.out.print(e);
 			f = new Scanner("\\Not working");
@@ -200,10 +200,10 @@ public class ApproxRunner {
 					}
 				}
 			}
-			Rocket.applyAcc(grav(Rocket, oBs.get(i)), timeCon);
+			//Rocket.applyAcc(grav(Rocket, oBs.get(i)), timeCon);
 			oBs.get(i).tickVel(timeCon);
 		}
-		Rocket.tickVel(timeCon);
+		//Rocket.tickVel(timeCon);
 	}
 	
 	//calculates the gravitational acceleration vector's x and y components from body 1 to body 2
@@ -288,11 +288,11 @@ public class ApproxRunner {
 					p.drawLine((int) (x + rad2*Math.sin(oBcur.getCurRot())), (int) (y + rad2*Math.cos(oBcur.getCurRot())), (int) (x - rad2*Math.sin(oBcur.getCurRot())), (int) (y - rad2*Math.cos(oBcur.getCurRot())));
 					
 				}
-				p.setColor(Rocket.getCol());
-				rad = (int) (Math.log10(Rocket.getRad()/100)*radScale);
-				x = (int) (scale(Rocket.getPos()[0], rad, 0));
-				y = (int) (scale(Rocket.getPos()[1], rad, 1));
-				p.fillOval(x, y, rad, rad);
+				//p.setColor(Rocket.getCol());
+				//rad = (int) (Math.log10(Rocket.getRad()/100)*radScale);
+			//	x = (int) (scale(Rocket.getPos()[0], rad, 0));
+			//	y = (int) (scale(Rocket.getPos()[1], rad, 1));
+			//	p.fillOval(x, y, rad, rad);
 				p.setColor(Color.WHITE);
 				long time = count/(3600*24);
 				p.drawString("Days: " + time, 10, 30);
