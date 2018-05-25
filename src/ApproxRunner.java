@@ -120,7 +120,7 @@ public class ApproxRunner {
 			System.out.print(e);
 			f = new Scanner("\\Not working");
 		}
-		molsInit();
+		//molsInit();
 		radScale = f.nextDouble();
 		posScale = f.nextDouble();
 		int t = 0;
@@ -160,7 +160,7 @@ public class ApproxRunner {
 		
 	}
 	
-	private static void molsInit() {
+/**	private static void molsInit() {
 		Molecule[] tmols = {new Molecule("AHydrogen", 1), new Molecule("MHydrogen", 2),
 							new Molecule("Helium", 4), //new Molecule("Helium", 4),
 							new Molecule("ANitrogen", 12), new Molecule("MNitrogen", 24),
@@ -176,7 +176,7 @@ public class ApproxRunner {
 							new Molecule("C2H6", 30), new Molecule("Hydrogen Deuteride", 3),
 							};
 		mols = tmols;
-	}
+	}*/
 
 	//calculates the angle between 2 bodies
 	private static double getAng(OrbitalBody oB, OrbitalBody oB2) {
@@ -211,20 +211,23 @@ public class ApproxRunner {
 	
 	//calculates the gravitational acceleration vector's x and y components from body 1 to body 2
 	private static double[] grav(OrbitalBody oB, OrbitalBody oB2) {
-		double dtot = dist(oB,oB2);
+		double[] dn = {dN(oB, oB2, 0), dN(oB, oB2, 1), dN(oB, oB2, 2)};
+		double dtot = Math.sqrt(dn[0]*dn[0] + dn[1]*dn[1] + dn[2]*dn[2]);
 		double acc = (oB2.getGMass())/(dtot*dtot*dtot);
-		double[] tr= {acc*(oB2.getPos()[0] - oB.getPos()[0]),acc*(oB2.getPos()[1] - oB.getPos()[1]), acc*(oB2.getPos()[2] - oB.getPos()[2])};
+		double[] tr= {acc*dn[0],acc*dn[1], acc*dn[2]};
+		//System.out.println(oB2.getName() + " -> " + oB.getName() + ": (" + dtot + " m) (" + dn[0] + ", " + dn[1] + ", " + dn[2] + " m) (" + tr[0] + ", " + tr[1] + ", " + tr[2] + " m/s^2)");
 		return tr;
 	}
 	
 
 	//calculates the distance between 2 bodies
 	private static double dist(OrbitalBody oB, OrbitalBody oB2) {
-		double tr = Math.sqrt(Math.pow((oB2.getPos()[1] - oB.getPos()[1]), 2) + Math.pow((oB2.getPos()[0] - oB.getPos()[0]) + Math.pow((oB2.getPos()[2] - oB.getPos()[2]), 2), 2));
-		//if(count%10000 == 0) {
-		//	System.out.println(tr);
-		//}
+		double tr = Math.sqrt(Math.pow(dN(oB, oB2, 0), 2) + Math.pow(dN(oB, oB2, 1) + Math.pow(dN(oB, oB2, 2), 2), 2));
 		return tr;
+	}
+	
+	private static double dN(OrbitalBody oB, OrbitalBody oB2, int n) {
+		return oB2.getPos()[n] - oB.getPos()[n];
 	}
 	
 	//Calculates collision between 2 bodies
