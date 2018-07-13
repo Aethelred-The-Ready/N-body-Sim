@@ -1,0 +1,4 @@
+6.0 0.000000001
+//Name  Mass		Radius	semiMaj	eccen	incl	longAsc longPer	meanLong	Rot		RGB
+Sol 	1.988.5E27 	695.7E6 0 		0 		0 		0 		0 		0			0		255 255 0
+Mercury

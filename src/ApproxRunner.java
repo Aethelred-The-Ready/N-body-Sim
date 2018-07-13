@@ -115,7 +115,7 @@ public class ApproxRunner {
 	public static void main(String[] args) {
 		Scanner f;
 		try {
-			f = new Scanner(new File("Saturn_System.txt"));
+			f = new Scanner(new File("Solar_System_Simple.txt"));
 		}catch(Exception e){
 			System.out.print(e);
 			f = new Scanner("\\Not working");
@@ -128,9 +128,28 @@ public class ApproxRunner {
 			String name = f.next();
 			if(name.charAt(0) == '\\')
 				f.nextLine();
-			else
-				oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
-			System.out.println(t + ": " + oBs.get(t++));
+			else {
+				boolean exact = false;
+				if(exact) {
+					oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
+				}else {
+					//longAsc longPer	meanLong	Rot		RGB
+					double GM = f.nextDouble() * 6.67408E-11;
+					double rD = f.nextDouble();
+					double sM = f.nextDouble();
+					double eC = f.nextDouble();
+					double iN = f.nextDouble();
+					double lA = f.nextDouble();
+					double lP = f.nextDouble();
+					double mL = f.nextDouble();
+					double rO = f.nextDouble();
+					Color col = new Color(f.nextInt(), f.nextInt(), f.nextInt());
+					double pH = sM * (1 - eC);
+					double aH = sM * (1 + eC);
+				}
+			}
+			System.out.println(t + ": " + oBs.get(t));
+			t++;
 		}
 		//String name = f.next();
 		//oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
