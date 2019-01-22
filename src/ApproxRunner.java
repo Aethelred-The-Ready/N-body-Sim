@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -17,19 +18,21 @@ public class ApproxRunner {
 	static JPanel j;
 	static Molecule[] mols;//Common atmospheric molecules
 	static ArrayList<OrbitalBody> oBs = new ArrayList<OrbitalBody>();
-	static OrbitalBody Rocket = new OrbitalBody("Rocket", 5E3, 1E6, 147.09E9, 350E6, 0, -1000, 30290, 0, 0, new Color(200, 50, 200));
+	static OrbitalBody Rocket = new OrbitalBody("Rocket", 5E3, 1E6, 147.41639E9, 0, 0, 0, 31372, 0, 0, new Color(200, 50, 200));
 	final static double timeCon = 1;
 	static boolean paused = false;
-	static double scale = 1;
+	static double scale = 0.66;
 	static double posScale = 0.000000001d;
 	static double radScale = 8;
 	static long count = 0;
 	static int xV = 500;
 	static int yV = 500;
-	static int speed = 1024;
+	static int speed = 4096;
 	static OrbitalBody focus;
 	static boolean focused = false;
+	static boolean zaxis = false;
 	static int foc = 0;
+	static String s = "";
 	static Runnable r = new Runnable() {
 
 		public void run() {
@@ -72,11 +75,13 @@ public class ApproxRunner {
 				xV = (int) (((xV - 500) * 2) + 500);
 				radScale += 1;
 			}else if(e.getKeyCode() == KeyEvent.VK_SPACE) {
-				paused =! paused;
+				paused = !paused;
 			}else if(e.getKeyCode() == KeyEvent.VK_Z) {
+				zaxis = !zaxis;
+			}else if(e.getKeyCode() == KeyEvent.VK_C) {
 				save();
 			}else if(e.getKeyCode() == KeyEvent.VK_X) {
-				focused =! focused;
+				focused = !focused;
 			}else if(e.getKeyCode() == KeyEvent.VK_T) {
 				foc++;
 				if(foc >= 0)
@@ -89,11 +94,11 @@ public class ApproxRunner {
 					focus = oBs.get(foc);
 				else
 					focus = Rocket;
-			}else if(e.getKeyCode() == KeyEvent.VK_NUMPAD7) {
+			}else if(e.getKeyCode() == KeyEvent.VK_9) {
 				speed/=2;
 				if(speed == 1)
 					speed = 0;
-			}else if(e.getKeyCode() == KeyEvent.VK_NUMPAD1) {
+			}else if(e.getKeyCode() == KeyEvent.VK_0) {
 				speed*=2;
 				if(speed == 0) {
 					speed = 1;
@@ -115,7 +120,7 @@ public class ApproxRunner {
 	public static void main(String[] args) {
 		Scanner f;
 		try {
-			f = new Scanner(new File("Solar_System.txt"));
+			f = new Scanner(new File("Solar_System_Simple.txt"));
 		}catch(Exception e){
 			System.out.print(e);
 			f = new Scanner("\\Not working");
@@ -125,7 +130,7 @@ public class ApproxRunner {
 		posScale = f.nextDouble();
 		while(f.hasNextLine()) {
 			String name = f.next();
-			if(name.charAt(0) == '\\')
+			if(name.charAt(0) == '/')
 				f.nextLine();
 			else
 				oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
@@ -142,10 +147,14 @@ public class ApproxRunner {
 		//t.start();
 		r.run();
 		while(true) {
-			if(!paused) {
+			if(!paused && !Double.isNaN(oBs.get(0).getPos()[0])) {
 				runner();
 				count+=timeCon;
 			}else {
+				if(Double.isNaN(oBs.get(0).getPos()[0])) {
+					System.out.println(s);
+					return;
+				}
 				try {
 					Thread.sleep(1);
 				} catch (Exception e) {}
@@ -188,36 +197,46 @@ public class ApproxRunner {
 
 	//calculates the gravity from every body to every other one and applies it
 	private static void runner() {
+		s = "";
 		for(int i = 0; i < oBs.size(); i++) {
 			for(int k = 0; k < oBs.size(); k++) {
 				if(k != i) {
 					oBs.get(i).applyAcc(grav(oBs.get(i), oBs.get(k)), timeCon);
-					if(count%10000 == 0) {
+					/*if(count%10000 == 0) {
 						if(dist(oBs.get(i), oBs.get(k)) < oBs.get(i).getRad() + oBs.get(k).getRad()) {
 							coll(oBs.get(i), oBs.get(k));
 							oBs.remove(k);
 						}
-					}
+					}*/
 				}
 			}
-			Rocket.applyAcc(grav(Rocket, oBs.get(i)), timeCon);
+			//s += ("All ok with: " + oBs.get(i) + "\n");
+			//Rocket.applyAcc(grav(Rocket, oBs.get(i)), timeCon);
 			oBs.get(i).tickVel(timeCon);
 		}
-		Rocket.tickVel(timeCon);
+		//Rocket.tickVel(timeCon);
 	}
 	
 	//calculates the gravitational acceleration vector's x and y components from body 1 to body 2
 	private static double[] grav(OrbitalBody oB, OrbitalBody oB2) {
 		double dtot = dist(oB,oB2);
-		double acc = (oB2.getGMass())/(dtot*dtot*dtot);
-		double[] tr= {acc*(oB2.getPos()[0] - oB.getPos()[0]),acc*(oB2.getPos()[1] - oB.getPos()[1]), acc*(oB2.getPos()[2] - oB.getPos()[2])};
+		double dxy = Math.sqrt(Math.pow((oB2.getPos()[0] - oB.getPos()[0]), 2)
+							 + Math.pow((oB2.getPos()[1] - oB.getPos()[1]), 2));
+		double acc = (oB2.getGMass())/(dxy*dxy*dxy);
+		double Z = 0;
+		double[] tr= {acc*(oB2.getPos()[0] - oB.getPos()[0]),acc*(oB2.getPos()[1] - oB.getPos()[1]), Z};
 		return tr;
 	}
 	
+	private static double trig(OrbitalBody oB, OrbitalBody oB2, int a, int b) {
+		return Math.sqrt((oB2.getPos()[a] - oB.getPos()[a])*(oB2.getPos()[a] - oB.getPos()[a]) + (oB2.getPos()[b] - oB.getPos()[b])*(oB2.getPos()[b] - oB.getPos()[b]));
+	}
 
 	//calculates the distance between 2 bodies
 	private static double dist(OrbitalBody oB, OrbitalBody oB2) {
-		double tr = Math.sqrt(Math.pow((oB2.getPos()[1] - oB.getPos()[1]), 2) + Math.pow((oB2.getPos()[0] - oB.getPos()[0]) + Math.pow((oB2.getPos()[2] - oB.getPos()[2]), 2), 2));
+		double tr = Math.sqrt(Math.pow((oB2.getPos()[0] - oB.getPos()[0]), 2)
+							+ Math.pow((oB2.getPos()[1] - oB.getPos()[1]), 2)
+							+ Math.pow((oB2.getPos()[2] - oB.getPos()[2]), 2));
 		//if(count%10000 == 0) {
 		//	System.out.println(tr);
 		//}
@@ -248,8 +267,8 @@ public class ApproxRunner {
 		j = new JPanel(){
 			public void paint(Graphics p) {	
 				if(focused) {
-					xV = 500 - (int) (focus.getPos()[0]*posScale);
-					yV = 500 - (int) (focus.getPos()[1]*posScale);
+					xV = 500 - (int) (focus.getPos()[0]*posScale/1.44);
+					yV = 500 - (int) (focus.getPos()[1]*posScale/1.44);
 				}
 				OrbitalBody oBcur;
 				int rad;
@@ -265,34 +284,49 @@ public class ApproxRunner {
 					p.drawLine(0, i*100, 2000, i*100);
 				}
 				p.setColor(Color.WHITE);
-				for(int i = 0;i < oBs.size();i++) {
-					oBcur = oBs.get(i);
-					p.setColor(oBcur.getCol());
-					//log radius calculator
-					rad = (int) (Math.log10(oBcur.getRad()/100)*radScale);
-					x = (int) (scale(oBcur.getPos()[0], rad, 0));
-					y = (int) (scale(oBcur.getPos()[1], rad, 1));
-					p.fillOval(x, y, rad, rad);
-					if(i == foc) {
-						int ld = (int) (posScale * 1.079E12);
-						p.setColor(Color.YELLOW);
-						p.drawOval(x - (int) (1.0/2 * ld), y - (int) (1.0/2 * ld), ld, ld);
-						p.setColor(Color.WHITE);
-						p.drawString(oBcur.getVel()[0] + ", " + oBcur.getVel()[1] + ", " + oBcur.getVel()[2] + " m/s", 10, 110);
-						p.drawString(oBcur.getPos()[0] + ", " + oBcur.getPos()[1] + ", " + oBcur.getPos()[2] + " m", 10, 130);
+				if(zaxis) {
+					ArrayList<OrbitalBody> oBstemp = oBs;
+					Collections.sort(oBstemp, OrbitalBody.ySort);
+					System.out.println(oBstemp);
+					for(int i = 0;i < oBstemp.size();i++) {
+						oBcur = oBstemp.get(i);
+						p.setColor(oBcur.getCol());
+						//log radius calculator
+						rad = (int) (Math.log10(oBcur.getRad()/100)*radScale);
+						x = (int) (scale(oBcur.getPos()[0], rad, 0));
+						y = (int) (scale(oBcur.getPos()[2], rad, 2));
+						p.fillOval(x, y, rad, rad);
 					}
-					p.setColor(Color.WHITE);
-					double rad2 = rad/2;
-					x+=rad2;
-					y+=rad2;
-					p.drawLine((int) (x + rad2*Math.sin(oBcur.getCurRot())), (int) (y + rad2*Math.cos(oBcur.getCurRot())), (int) (x - rad2*Math.sin(oBcur.getCurRot())), (int) (y - rad2*Math.cos(oBcur.getCurRot())));
-					
+				} else {
+					for(int i = 0;i < oBs.size();i++) {
+						oBcur = oBs.get(i);
+						p.setColor(oBcur.getCol());
+						//log radius calculator
+						rad = (int) (Math.log10(oBcur.getRad()/100)*radScale);
+						x = (int) (scale(oBcur.getPos()[0], rad, 0));
+						y = (int) (scale(oBcur.getPos()[1], rad, 1));
+						p.fillOval(x, y, rad, rad);
+						if(i == foc) {
+							int ld = (int) (posScale * 1.079E12);
+							p.setColor(Color.YELLOW);
+							p.drawOval(x - (int) (1.0/2 * ld), y - (int) (1.0/2 * ld), ld, ld);
+							p.setColor(Color.WHITE);
+							p.drawString(oBcur.getVel()[0] + ", " + oBcur.getVel()[1] + ", " + oBcur.getVel()[2] + " m/s", 10, 110);
+							p.drawString(oBcur.getPos()[0] + ", " + oBcur.getPos()[1] + ", " + oBcur.getPos()[2] + " m", 10, 130);
+						}
+						p.setColor(Color.WHITE);
+						double rad2 = rad/2;
+						x+=rad2;
+						y+=rad2;
+						p.drawLine((int) (x + rad2*Math.sin(oBcur.getCurRot())), (int) (y + rad2*Math.cos(oBcur.getCurRot())), (int) (x - rad2*Math.sin(oBcur.getCurRot())), (int) (y - rad2*Math.cos(oBcur.getCurRot())));
+						
+					}
 				}
-				p.setColor(Rocket.getCol());
-				rad = (int) (Math.log10(Rocket.getRad()/100)*radScale);
-				x = (int) (scale(Rocket.getPos()[0], rad, 0));
-				y = (int) (scale(Rocket.getPos()[1], rad, 1));
-				p.fillOval(x, y, rad, rad);
+				//p.setColor(Rocket.getCol());
+				//rad = (int) (Math.log10(Rocket.getRad()/100)*radScale);
+				//x = (int) (scale(Rocket.getPos()[0], rad, 0));
+				//y = (int) (scale(Rocket.getPos()[1], rad, 1));
+				//p.fillOval(x, y, rad, rad);
 				p.setColor(Color.WHITE);
 				long time = count/(3600*24);
 				p.drawString("Days: " + time, 10, 30);
@@ -314,10 +348,11 @@ public class ApproxRunner {
 		////log
 		///return (int) (((Math.abs(d)/d)*Math.log10(Math.abs(d) + 1)*posScale) + 500 - r/2);
 		//non-log
+		
 		if(axis == 0) {
-			return (int) (d*posScale + xV - r/2);	
+			return (int) (d*posScale/1.44 + xV - r/2);	
 		}
-		return (int) (d*posScale + yV - r/2);
+		return (int) (d*posScale/1.44 + yV - r/2);
 	}
 	
 	private static void save() {
