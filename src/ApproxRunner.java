@@ -125,15 +125,36 @@ public class ApproxRunner {
 			System.out.print(e);
 			f = new Scanner("\\Not working");
 		}
-		molsInit();
+		//molsInit();
 		radScale = f.nextDouble();
 		posScale = f.nextDouble();
+		int t = 0;
 		while(f.hasNextLine()) {
 			String name = f.next();
 			if(name.charAt(0) == '/')
 				f.nextLine();
-			else
-				oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
+			else {
+				boolean exact = false;
+				if(exact) {
+					oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
+				}else {
+					//longAsc longPer	meanLong	Rot		RGB
+					double GM = f.nextDouble() * 6.67408E-11;
+					double rD = f.nextDouble();
+					double sM = f.nextDouble();
+					double eC = f.nextDouble();
+					double iN = f.nextDouble();
+					double lA = f.nextDouble();
+					double lP = f.nextDouble();
+					double mL = f.nextDouble();
+					double rO = f.nextDouble();
+					Color col = new Color(f.nextInt(), f.nextInt(), f.nextInt());
+					double pH = sM * (1 - eC);
+					double aH = sM * (1 + eC);
+				}
+			}
+			System.out.println(t + ": " + oBs.get(t));
+			t++;
 		}
 		//String name = f.next();
 		//oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
@@ -167,7 +188,7 @@ public class ApproxRunner {
 		
 	}
 	
-	private static void molsInit() {
+/**	private static void molsInit() {
 		Molecule[] tmols = {new Molecule("AHydrogen", 1), new Molecule("MHydrogen", 2),
 							new Molecule("Helium", 4), //new Molecule("Helium", 4),
 							new Molecule("ANitrogen", 12), new Molecule("MNitrogen", 24),
@@ -183,7 +204,7 @@ public class ApproxRunner {
 							new Molecule("C2H6", 30), new Molecule("Hydrogen Deuteride", 3),
 							};
 		mols = tmols;
-	}
+	}*/
 
 	//calculates the angle between 2 bodies
 	private static double getAng(OrbitalBody oB, OrbitalBody oB2) {
@@ -201,6 +222,7 @@ public class ApproxRunner {
 		for(int i = 0; i < oBs.size(); i++) {
 			for(int k = 0; k < oBs.size(); k++) {
 				if(k != i) {
+					//System.out.println("{" + i + ", " + k + "}");
 					oBs.get(i).applyAcc(grav(oBs.get(i), oBs.get(k)), timeCon);
 					/*if(count%10000 == 0) {
 						if(dist(oBs.get(i), oBs.get(k)) < oBs.get(i).getRad() + oBs.get(k).getRad()) {
@@ -211,6 +233,7 @@ public class ApproxRunner {
 				}
 			}
 			//s += ("All ok with: " + oBs.get(i) + "\n");
+
 			//Rocket.applyAcc(grav(Rocket, oBs.get(i)), timeCon);
 			oBs.get(i).tickVel(timeCon);
 		}
@@ -241,6 +264,10 @@ public class ApproxRunner {
 		//	System.out.println(tr);
 		//}
 		return tr;
+	}
+	
+	private static double dN(OrbitalBody oB, OrbitalBody oB2, int n) {
+		return oB2.getPos()[n] - oB.getPos()[n];
 	}
 	
 	//Calculates collision between 2 bodies
