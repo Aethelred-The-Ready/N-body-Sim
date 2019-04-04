@@ -27,7 +27,9 @@ public class ApproxRunner {
 	static long count = 0;
 	static int xV = 500;
 	static int yV = 500;
-	static int speed = 4096;
+	static boolean zaxis = false;
+	static int speed = 0;
+	static boolean wentWrong = false;
 	static OrbitalBody focus;
 	static boolean focused = false;
 	static boolean zaxis = false;
@@ -50,7 +52,7 @@ public class ApproxRunner {
 		
 		
 	};
-	static Timer t = new Timer(17,render);
+	static Timer t = new Timer(40,render);
 	static KeyListener k = new KeyListener() {
 
 		public void keyPressed(KeyEvent e) {
@@ -120,7 +122,7 @@ public class ApproxRunner {
 	public static void main(String[] args) {
 		Scanner f;
 		try {
-			f = new Scanner(new File("Solar_System_Simple.txt"));
+			f = new Scanner(new File("Solar_System.txt"));
 		}catch(Exception e){
 			System.out.print(e);
 			f = new Scanner("\\Not working");
@@ -134,10 +136,12 @@ public class ApproxRunner {
 			if(name.charAt(0) == '/')
 				f.nextLine();
 			else {
-				boolean exact = false;
+				boolean exact = true;
 				if(exact) {
 					oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
-				}else {
+					System.out.println(t + ": " + oBs.get(t));
+					t++;
+				}else{
 					//longAsc longPer	meanLong	Rot		RGB
 					double GM = f.nextDouble() * 6.67408E-11;
 					double rD = f.nextDouble();
@@ -153,8 +157,6 @@ public class ApproxRunner {
 					double aH = sM * (1 + eC);
 				}
 			}
-			System.out.println(t + ": " + oBs.get(t));
-			t++;
 		}
 		//String name = f.next();
 		//oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
@@ -166,11 +168,20 @@ public class ApproxRunner {
 		//render();
 		
 		//t.start();
+		
+		long startTime = System.currentTimeMillis();
+		
 		r.run();
 		while(true) {
-			if(!paused && !Double.isNaN(oBs.get(0).getPos()[0])) {
+			if(!paused && !wentWrong) {
 				runner();
 				count+=timeCon;
+				if(count%31556926 == 0) {
+					System.out.println(System.currentTimeMillis() - startTime);
+					
+					//74585
+					//85229
+				}
 			}else {
 				if(Double.isNaN(oBs.get(0).getPos()[0])) {
 					System.out.println(s);
@@ -180,31 +191,16 @@ public class ApproxRunner {
 					Thread.sleep(1);
 				} catch (Exception e) {}
 			}
-			for(int i = 0;i < speed;i++) {
-				System.nanoTime();
+			if(speed != 0) {
+				for(int i = 0;i < speed;i++) {
+					System.nanoTime();
+				}
 			}
 			//System.out.println(" " + System.nanoTime());
 		}
 		
 	}
 	
-/**	private static void molsInit() {
-		Molecule[] tmols = {new Molecule("AHydrogen", 1), new Molecule("MHydrogen", 2),
-							new Molecule("Helium", 4), //new Molecule("Helium", 4),
-							new Molecule("ANitrogen", 12), new Molecule("MNitrogen", 24),
-							new Molecule("AOxygen", 16), new Molecule("MOxygen", 32),
-							new Molecule("CH4", 16), new Molecule("NH3", 17),
-							new Molecule("OH2", 18), new Molecule("Neon", 20),
-							new Molecule("CO", 28), new Molecule("NO", 30),
-							new Molecule("H2S", 34), new Molecule("Argon", 40),
-							new Molecule("CO2", 44), new Molecule("N2O", 44),
-							new Molecule("NO2", 46), new Molecule("O3", 48),
-							new Molecule("SO2", 64), new Molecule("SO3", 80),
-							new Molecule("Krypton", 84), new Molecule("Xenon", 131),
-							new Molecule("C2H6", 30), new Molecule("Hydrogen Deuteride", 3),
-							};
-		mols = tmols;
-	}*/
 
 	//calculates the angle between 2 bodies
 	private static double getAng(OrbitalBody oB, OrbitalBody oB2) {
@@ -222,32 +218,37 @@ public class ApproxRunner {
 		for(int i = 0; i < oBs.size(); i++) {
 			for(int k = 0; k < oBs.size(); k++) {
 				if(k != i) {
-					//System.out.println("{" + i + ", " + k + "}");
+					//double[] temp = oBs.get(i).getPos();
 					oBs.get(i).applyAcc(grav(oBs.get(i), oBs.get(k)), timeCon);
-					/*if(count%10000 == 0) {
-						if(dist(oBs.get(i), oBs.get(k)) < oBs.get(i).getRad() + oBs.get(k).getRad()) {
-							coll(oBs.get(i), oBs.get(k));
-							oBs.remove(k);
-						}
+					/*if(Double.isNaN(oBs.get(i).getPos()[1])) {
+						System.out.println("Something went wrong here with:" + oBs.get(i));
+						System.out.println(temp[0] + "," + temp[1] + "," + temp[2]);
+						wentWrong = true;
+						return;
 					}*/
 				}
 			}
 			//s += ("All ok with: " + oBs.get(i) + "\n");
 
 			//Rocket.applyAcc(grav(Rocket, oBs.get(i)), timeCon);
+			//System.out.println("All good with: " + oBs.get(i));
 			oBs.get(i).tickVel(timeCon);
+			//if(Double.isNaN(oBs.get(i).getPos()[1])) {
+			//	System.out.println("Something went wrong with:" + oBs.get(i));
+			//	wentWrong = true;
+			//	return;
+			//}
 		}
 		//Rocket.tickVel(timeCon);
 	}
 	
 	//calculates the gravitational acceleration vector's x and y components from body 1 to body 2
 	private static double[] grav(OrbitalBody oB, OrbitalBody oB2) {
-		double dtot = dist(oB,oB2);
-		double dxy = Math.sqrt(Math.pow((oB2.getPos()[0] - oB.getPos()[0]), 2)
-							 + Math.pow((oB2.getPos()[1] - oB.getPos()[1]), 2));
-		double acc = (oB2.getGMass())/(dxy*dxy*dxy);
-		double Z = 0;
-		double[] tr= {acc*(oB2.getPos()[0] - oB.getPos()[0]),acc*(oB2.getPos()[1] - oB.getPos()[1]), Z};
+		double[] dn = dN(oB, oB2);
+		double dtot = Math.sqrt(dn[0]*dn[0] + dn[1]*dn[1] + dn[2]*dn[2]);
+		double acc = (oB2.getGMass())/(dtot*dtot*dtot);
+		double[] tr= {acc*dn[0],acc*dn[1], acc*dn[2]};
+		//System.out.println(oB2.getName() + " -> " + oB.getName() + ": (" + dtot + " m) (" + dn[0] + ", " + dn[1] + ", " + dn[2] + " m) (" + tr[0] + ", " + tr[1] + ", " + tr[2] + " m/s^2)");
 		return tr;
 	}
 	
@@ -266,8 +267,12 @@ public class ApproxRunner {
 		return tr;
 	}
 	
-	private static double dN(OrbitalBody oB, OrbitalBody oB2, int n) {
-		return oB2.getPos()[n] - oB.getPos()[n];
+	private static double[] dN(OrbitalBody oB, OrbitalBody oB2) {
+		double[] a = oB.getPos();
+		double[] b = oB2.getPos();
+		double[] tr = {b[0] - a[0], b[1] - a[1], b[2] - a[2]};
+		return tr;
+		
 	}
 	
 	//Calculates collision between 2 bodies
@@ -312,11 +317,13 @@ public class ApproxRunner {
 				}
 				p.setColor(Color.WHITE);
 				if(zaxis) {
-					ArrayList<OrbitalBody> oBstemp = oBs;
-					Collections.sort(oBstemp, OrbitalBody.ySort);
-					System.out.println(oBstemp);
-					for(int i = 0;i < oBstemp.size();i++) {
-						oBcur = oBstemp.get(i);
+					ArrayList<OrbitalBody> oBsTemp = new ArrayList<OrbitalBody>();
+					for(int i = 0;i < oBs.size();i++) {
+						oBsTemp.add(oBs.get(i));
+					}
+					Collections.sort(oBsTemp, OrbitalBody.ySort);
+					for(int i = 0;i < oBsTemp.size();i++) {
+						oBcur = oBsTemp.get(i);
 						p.setColor(oBcur.getCol());
 						//log radius calculator
 						rad = (int) (Math.log10(oBcur.getRad()/100)*radScale);
@@ -370,6 +377,8 @@ public class ApproxRunner {
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
+	
+	
 
 	private static int scale(double d, double r, int axis) {
 		////log
