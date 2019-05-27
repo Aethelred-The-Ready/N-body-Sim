@@ -1,4 +1,7 @@
 6.0 0.000000001
-//Name  Mass		Radius	semiMaj	eccen	incl	longAsc longPer	meanLong	Rot		RGB
-Sol 	1.988.5E27 	695.7E6 0 		0 		0 		0 		0 		0			0		255 255 0
-Mercury
+//Name  Mass		Radius	semiMaj	eccen	incl	longAsc longPer	meanLong	Rot		RGB			Parent
+Sol 	1.9885E27 	695.7E6 0 		0 		0 		0 		0 		0			0		255 255 0	Sol
+Mercury 3.3E23		2.43E3	57.9E9	0.2056	0.122	0.843	1.352	252.25		1407.6	200 127 200	Sol
+Venus	4.868E24	6.05E3	1.08E11	0.0067	3.39	76.68	131.5	181.98		-5832.5 255 127 0	Sol
+Earth	3.986004E14 6371000 1.49E11	0.0167	0.00005	-11.26	102.95	100.464		23.9 	0 200 255	Sol
+Luna 	4.904869E12 1737000 3.84E8 	0.055 	5.145 	0 		31372 	0 	655.7 	128 128 128

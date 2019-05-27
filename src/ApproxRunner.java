@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -29,6 +30,7 @@ public class ApproxRunner {
 	static int yV = 500;
 	static boolean zaxis = false;
 	static int speed = 0;
+	static Time curTime = new Time(2000, 1, 1, 12, 0, 0);
 	static boolean wentWrong = false;
 	static OrbitalBody focus;
 	static boolean focused = false;
@@ -120,7 +122,7 @@ public class ApproxRunner {
 	public static void main(String[] args) {
 		Scanner f;
 		try {
-			f = new Scanner(new File("Solar_System.txt"));
+			f = new Scanner(new File("Solar_System_J2000.txt"));
 		}catch(Exception e){
 			System.out.print(e);
 			f = new Scanner("\\Not working");
@@ -129,33 +131,70 @@ public class ApproxRunner {
 		radScale = f.nextDouble();
 		posScale = f.nextDouble();
 		int t = 0;
-		while(f.hasNextLine()) {
+		System.out.println(radScale);
+		System.out.println(posScale);
+		
+		while(f.hasNext()) {
+			System.out.println(f.hasNext());
 			String name = f.next();
-			if(name.charAt(0) == '/')
+			if(name.charAt(0) == '/') {
 				f.nextLine();
-			else {
+			}else {
 				boolean exact = true;
 				if(exact) {
 					oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
 					System.out.println(t + ": " + oBs.get(t));
 					t++;
 				}else{
-					//longAsc longPer	meanLong	Rot		RGB
 					double GM = f.nextDouble() * 6.67408E-11;
-					double rD = f.nextDouble();
-					double sM = f.nextDouble();
-					double eC = f.nextDouble();
-					double iN = f.nextDouble();
-					double lA = f.nextDouble();
-					double lP = f.nextDouble();
-					double mL = f.nextDouble();
-					double rO = f.nextDouble();
+					double rD = f.nextDouble(); //radius
+					double sM = f.nextDouble(); //semimajor axis
+					double eC = f.nextDouble(); //eccentricity
+					double iN = f.nextDouble(); //inclination
+					double lA = f.nextDouble(); //long Ascending Node
+					double lP = f.nextDouble(); //long Periapsis
+					double v0 = f.nextDouble(); //V0
+					double rO = f.nextDouble(); //Rotation in hours
 					Color col = new Color(f.nextInt(), f.nextInt(), f.nextInt());
-					double pH = sM * (1 - eC);
-					double aH = sM * (1 + eC);
+					String parent = f.next();
+					
+					OrbitalBody Parent = getOBFromString(parent);
+					
+					System.out.println(Parent);
+					
+					if(Parent != null) {
+					
+						Vector3D P = new Vector3D(
+								((Math.cos(lA) * Math.cos(lP - lA)) - (Math.sin(lA) * Math.cos(iN) * Math.cos(lP - lA))),
+								((Math.sin(lA) * Math.cos(lP - lA)) + (Math.cos(lA) * Math.cos(iN) * Math.sin(lP - lA))),
+								(Math.sin(iN) * Math.sin(lP - lA)));
+						
+						Vector3D Q = new Vector3D(
+								((- (Math.cos(lA) * Math.sin(lP - lA))) - (Math.sin(lA) * Math.cos(iN) * Math.cos(lP - lA))),
+								((- (Math.sin(lA) * Math.sin(lP - lA))) + (Math.cos(lA) * Math.cos(iN) * Math.cos(lP - lA))),
+								(Math.sin(iN) * Math.cos(lP - lA)));
+						
+						double rs = (sM * (1 - eC * eC)) / (1 + eC * Math.cos(v0));
+						
+						Vector3D R = Vector3D.add(Vector3D.sdot((rs * Math.cos(v0)), P), Vector3D.sdot((rs * Math.sin(v0)), Q));
+					
+						Vector3D V = Vector3D.sdot(
+								Math.sqrt(Parent.getGMass()/(sM * (1 - eC * eC))), 
+								Vector3D.add(Vector3D.sdot(-Math.sin(v0), P),
+											 Vector3D.sdot((eC + Math.cos(v0)), Q)));
+						System.out.println("Pos: " + R + "\nVel: " + V);
+						
+						oBs.add(new OrbitalBody(name, GM, rD, R.x, R.y, R.z, V.x, V.y, V.z, rO, col));
+						
+					}else {
+						oBs.add(new OrbitalBody(name, GM, rD, 0, 0, 0, 0, 0 ,0, rO, col));
+						
+					}
 				}
 			}
 		}
+		
+		
 		//String name = f.next();
 		//oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
 		//for(int i = 0;i < 25;i++) {
@@ -176,9 +215,6 @@ public class ApproxRunner {
 				count+=timeCon;
 				if(count%31556926 == 0) {
 					System.out.println(System.currentTimeMillis() - startTime);
-					
-					//74585
-					//85229
 				}
 			}else {
 				try {
@@ -195,6 +231,14 @@ public class ApproxRunner {
 		
 	}
 	
+	private static OrbitalBody getOBFromString(String name) {
+		for(int i = 0;i < oBs.size();i++) {
+			if(name.equals(oBs.get(i).getName())) {
+				return oBs.get(i);
+			}
+		}
+		return null;
+	}
 
 	//calculates the angle between 2 bodies
 	private static double getAng(OrbitalBody oB, OrbitalBody oB2) {
@@ -211,26 +255,13 @@ public class ApproxRunner {
 		for(int i = 0; i < oBs.size(); i++) {
 			for(int k = 0; k < oBs.size(); k++) {
 				if(k != i) {
-					//double[] temp = oBs.get(i).getPos();
 					oBs.get(i).applyAcc(grav(oBs.get(i), oBs.get(k)), timeCon);
-					/*if(Double.isNaN(oBs.get(i).getPos()[1])) {
-						System.out.println("Something went wrong here with:" + oBs.get(i));
-						System.out.println(temp[0] + "," + temp[1] + "," + temp[2]);
-						wentWrong = true;
-						return;
-					}*/
 				}
 			}
-			//Rocket.applyAcc(grav(Rocket, oBs.get(i)), timeCon);
-			//System.out.println("All good with: " + oBs.get(i));
 			oBs.get(i).tickVel(timeCon);
-			//if(Double.isNaN(oBs.get(i).getPos()[1])) {
-			//	System.out.println("Something went wrong with:" + oBs.get(i));
-			//	wentWrong = true;
-			//	return;
-			//}
 		}
 		//Rocket.tickVel(timeCon);
+		curTime.tick();
 	}
 	
 	//calculates the gravitational acceleration vector's x and y components from body 1 to body 2
@@ -341,8 +372,9 @@ public class ApproxRunner {
 			//	y = (int) (scale(Rocket.getPos()[1], rad, 1));
 			//	p.fillOval(x, y, rad, rad);
 				p.setColor(Color.WHITE);
-				long time = count/(3600*24);
-				p.drawString("Days: " + time, 10, 30);
+				//long time = count/(3600*24);
+				//p.drawString("Days: " + time, 10, 30);
+				p.drawString(curTime.toString(), 10, 30);
 				p.drawString("Speed: " + speed, 10, 50);
 				p.drawString("Scale: " + scale + " AU", 10, 70);
 				
