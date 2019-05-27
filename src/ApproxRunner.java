@@ -19,10 +19,10 @@ public class ApproxRunner {
 	static JPanel j;
 	static Molecule[] mols;//Common atmospheric molecules
 	static ArrayList<OrbitalBody> oBs = new ArrayList<OrbitalBody>();
-	static OrbitalBody Rocket = new OrbitalBody("Rocket", 5E3, 1E6, 147.09E9, 350E6, 0, -1000, 30290, 0, 0, new Color(200, 50, 200));
+	static OrbitalBody Rocket = new OrbitalBody("Rocket", 5E3, 1E6, 147.41639E9, 0, 0, 0, 31372, 0, 0, new Color(200, 50, 200));
 	final static double timeCon = 1;
 	static boolean paused = false;
-	static double scale = 1;
+	static double scale = 0.66;
 	static double posScale = 0.000000001d;
 	static double radScale = 8;
 	static long count = 0;
@@ -34,7 +34,9 @@ public class ApproxRunner {
 	static boolean wentWrong = false;
 	static OrbitalBody focus;
 	static boolean focused = false;
+	static boolean zaxis = false;
 	static int foc = 0;
+	static String s = "";
 	static Runnable r = new Runnable() {
 
 		public void run() {
@@ -77,13 +79,13 @@ public class ApproxRunner {
 				xV = (int) (((xV - 500) * 2) + 500);
 				radScale += 1;
 			}else if(e.getKeyCode() == KeyEvent.VK_SPACE) {
-				paused =! paused;
+				paused = !paused;
 			}else if(e.getKeyCode() == KeyEvent.VK_Z) {
-				zaxis=!zaxis;
+				zaxis = !zaxis;
 			}else if(e.getKeyCode() == KeyEvent.VK_C) {
 				save();
 			}else if(e.getKeyCode() == KeyEvent.VK_X) {
-				focused =! focused;
+				focused = !focused;
 			}else if(e.getKeyCode() == KeyEvent.VK_T) {
 				foc++;
 				if(foc >= 0)
@@ -217,6 +219,10 @@ public class ApproxRunner {
 					System.out.println(System.currentTimeMillis() - startTime);
 				}
 			}else {
+				if(Double.isNaN(oBs.get(0).getPos()[0])) {
+					System.out.println(s);
+					return;
+				}
 				try {
 					Thread.sleep(1);
 				} catch (Exception e) {}
@@ -252,12 +258,17 @@ public class ApproxRunner {
 
 	//calculates the gravity from every body to every other one and applies it
 	private static void runner() {
+		s = "";
 		for(int i = 0; i < oBs.size(); i++) {
 			for(int k = 0; k < oBs.size(); k++) {
 				if(k != i) {
 					oBs.get(i).applyAcc(grav(oBs.get(i), oBs.get(k)), timeCon);
 				}
 			}
+			//s += ("All ok with: " + oBs.get(i) + "\n");
+
+			//Rocket.applyAcc(grav(Rocket, oBs.get(i)), timeCon);
+			//System.out.println("All good with: " + oBs.get(i));
 			oBs.get(i).tickVel(timeCon);
 		}
 		//Rocket.tickVel(timeCon);
@@ -274,8 +285,20 @@ public class ApproxRunner {
 		return tr;
 	}
 	
+	private static double trig(OrbitalBody oB, OrbitalBody oB2, int a, int b) {
+		return Math.sqrt((oB2.getPos()[a] - oB.getPos()[a])*(oB2.getPos()[a] - oB.getPos()[a]) + (oB2.getPos()[b] - oB.getPos()[b])*(oB2.getPos()[b] - oB.getPos()[b]));
+	}
 
-	
+	//calculates the distance between 2 bodies
+	private static double dist(OrbitalBody oB, OrbitalBody oB2) {
+		double tr = Math.sqrt(Math.pow((oB2.getPos()[0] - oB.getPos()[0]), 2)
+							+ Math.pow((oB2.getPos()[1] - oB.getPos()[1]), 2)
+							+ Math.pow((oB2.getPos()[2] - oB.getPos()[2]), 2));
+		//if(count%10000 == 0) {
+		//	System.out.println(tr);
+		//}
+		return tr;
+	}
 	
 	private static double[] dN(OrbitalBody oB, OrbitalBody oB2) {
 		double[] a = oB.getPos();
@@ -368,9 +391,9 @@ public class ApproxRunner {
 				}
 				//p.setColor(Rocket.getCol());
 				//rad = (int) (Math.log10(Rocket.getRad()/100)*radScale);
-			//	x = (int) (scale(Rocket.getPos()[0], rad, 0));
-			//	y = (int) (scale(Rocket.getPos()[1], rad, 1));
-			//	p.fillOval(x, y, rad, rad);
+				//x = (int) (scale(Rocket.getPos()[0], rad, 0));
+				//y = (int) (scale(Rocket.getPos()[1], rad, 1));
+				//p.fillOval(x, y, rad, rad);
 				p.setColor(Color.WHITE);
 				//long time = count/(3600*24);
 				//p.drawString("Days: " + time, 10, 30);
@@ -395,6 +418,7 @@ public class ApproxRunner {
 		////log
 		///return (int) (((Math.abs(d)/d)*Math.log10(Math.abs(d) + 1)*posScale) + 500 - r/2);
 		//non-log
+		
 		if(axis == 0) {
 			return (int) (d*posScale/1.44 + xV - r/2);	
 		}
