@@ -34,7 +34,6 @@ public class ApproxRunner {
 	static boolean wentWrong = false;
 	static OrbitalBody focus;
 	static boolean focused = false;
-	static boolean zaxis = false;
 	static int foc = 0;
 	static String s = "";
 	static Runnable r = new Runnable() {
