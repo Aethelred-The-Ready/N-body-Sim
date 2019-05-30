@@ -22,7 +22,7 @@ public class ApproxRunner {
 	static OrbitalBody Rocket = new OrbitalBody("Rocket", 5E3, 1E6, 147.41639E9, 0, 0, 0, 31372, 0, 0, new Color(200, 50, 200));
 	final static double timeCon = 1;
 	static boolean paused = false;
-	static double scale = 0.66;
+	static double scale = 1;
 	static double posScale = 0.000000001d;
 	static double radScale = 8;
 	static long count = 0;
