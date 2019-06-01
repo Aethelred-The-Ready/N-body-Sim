@@ -34,7 +34,6 @@ public class ApproxRunner {
 	static boolean wentWrong = false;
 	static OrbitalBody focus;
 	static boolean focused = false;
-	static boolean zaxis = false;
 	static int foc = 0;
 	static String s = "";
 	static Runnable r = new Runnable() {
@@ -373,6 +372,8 @@ public class ApproxRunner {
 						x = (int) (scale(oBcur.getPos()[0], rad, 0));
 						y = (int) (scale(oBcur.getPos()[1], rad, 1));
 						p.fillOval(x, y, rad, rad);
+						p.setColor(oBcur.getCol().darker());
+						p.fillArc(x, y, rad, rad, 0, 180);
 						if(i == foc) {
 							int ld = (int) (posScale * 1.079E12);
 							p.setColor(Color.YELLOW);
@@ -412,7 +413,21 @@ public class ApproxRunner {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
+	private static double getXYAngle(OrbitalBody a, OrbitalBody b) {
+		double[] ap = a.getPos();
+		double[] bp = b.getPos();
+		
+		return Math.atan((ap[0] - bp[0])/(ap[1] - bp[1]));
+		
+	}
 	
+	private static double getZAngle(OrbitalBody a, OrbitalBody b) {
+		double[] ap = a.getPos();
+		double[] bp = b.getPos();
+		
+		return Math.atan((Math.pow(ap[0] - bp[0], 2) * Math.pow(ap[0] - bp[0], 2))/(ap[2] - bp[2]));
+		
+	}
 
 	private static int scale(double d, double r, int axis) {
 		////log
