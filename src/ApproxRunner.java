@@ -8,6 +8,8 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.ListIterator;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -36,6 +38,7 @@ public class ApproxRunner {
 	static boolean focused = false;
 	static int foc = 0;
 	static String s = "";
+	static LinkedList<xyz>[] trails;
 	static Runnable r = new Runnable() {
 
 		public void run() {
@@ -195,6 +198,11 @@ public class ApproxRunner {
 			}
 		}
 		
+		trails = new LinkedList[oBs.size()];
+		
+		for(int i = 0;i < oBs.size();i++) {
+			trails[i] = new LinkedList<xyz>();
+		}
 		
 		//String name = f.next();
 		//oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
@@ -365,15 +373,37 @@ public class ApproxRunner {
 					}
 				} else {
 					for(int i = 0;i < oBs.size();i++) {
+						p.setColor(oBs.get(i).getCol());
+						ListIterator<xyz> li = trails[i].listIterator(0);
+						
+						while(li.hasNext()) {
+							xyz tra = li.next();
+							p.drawRect(tra.x, tra.y, 1, 1);
+						}
+					}
+					
+					
+					for(int i = 0;i < oBs.size();i++) {
 						oBcur = oBs.get(i);
 						p.setColor(oBcur.getCol());
 						//log radius calculator
 						rad = (int) (Math.log10(oBcur.getRad()/100)*radScale);
 						x = (int) (scale(oBcur.getPos()[0], rad, 0));
 						y = (int) (scale(oBcur.getPos()[1], rad, 1));
+						
+						
+						
 						p.fillOval(x, y, rad, rad);
-						p.setColor(oBcur.getCol().darker());
-						p.fillArc(x, y, rad, rad, 0, 180);
+						trails[i].addFirst(new xyz(x + rad/2, y + rad/2, 0));
+						if(count > 10000000) {
+							trails[i].removeLast();
+						}
+						
+						if(i != 0) {
+							p.setColor(oBcur.getCol().darker());
+							int ang = getXYAngle(oBs.get(0), oBcur) + 180;
+							p.fillArc(x, y, rad, rad, ang, 180);
+						}
 						if(i == foc) {
 							int ld = (int) (posScale * 1.079E12);
 							p.setColor(Color.YELLOW);
@@ -387,6 +417,8 @@ public class ApproxRunner {
 						x+=rad2;
 						y+=rad2;
 						p.drawLine((int) (x + rad2*Math.sin(oBcur.getCurRot())), (int) (y + rad2*Math.cos(oBcur.getCurRot())), (int) (x - rad2*Math.sin(oBcur.getCurRot())), (int) (y - rad2*Math.cos(oBcur.getCurRot())));
+						
+						
 						
 					}
 				}
@@ -413,19 +445,19 @@ public class ApproxRunner {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
-	private static double getXYAngle(OrbitalBody a, OrbitalBody b) {
+	private static int getXYAngle(OrbitalBody a, OrbitalBody b) {
 		double[] ap = a.getPos();
 		double[] bp = b.getPos();
 		
-		return Math.atan((ap[0] - bp[0])/(ap[1] - bp[1]));
+		return (int) ((Math.atan2((bp[0] - ap[0]),(bp[1] - ap[1]))/(Math.PI))*180);
 		
 	}
 	
-	private static double getZAngle(OrbitalBody a, OrbitalBody b) {
+	private static int getZAngle(OrbitalBody a, OrbitalBody b) {
 		double[] ap = a.getPos();
 		double[] bp = b.getPos();
 		
-		return Math.atan((Math.pow(ap[0] - bp[0], 2) * Math.pow(ap[0] - bp[0], 2))/(ap[2] - bp[2]));
+		return (int) Math.atan((Math.pow(ap[0] - bp[0], 2) * Math.pow(ap[0] - bp[0], 2))/(ap[2] - bp[2]));
 		
 	}
 

@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.util.Comparator;
+import java.util.LinkedList;
 
 public class OrbitalBody {
 
@@ -89,6 +90,8 @@ public class OrbitalBody {
 	public String toString() {
 		return name + " " + GM + " " + radius + " " + pos[0] + " " + pos[1] + " " + pos[2] + " " + vel[0] + " " + vel[1] + " " + vel[2] + " " + col.getRed() + " " + col.getGreen() + " " + col.getBlue();
 	}
+	
+	
 	
 	public static Comparator<OrbitalBody> ySort = new Comparator<OrbitalBody>() {
 		public int compare(OrbitalBody a, OrbitalBody b) {
