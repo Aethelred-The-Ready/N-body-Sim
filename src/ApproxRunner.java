@@ -23,7 +23,6 @@ import javax.swing.Timer;
 public class ApproxRunner {
 	
 	static JPanel j;
-	static Molecule[] mols;//Common atmospheric molecules
 	static ArrayList<OrbitalBody> oBs = new ArrayList<OrbitalBody>();
 	static OrbitalBody Rocket = new OrbitalBody("Rocket", 5E3, 1E6, 147.41639E9, 0, 0, 0, 31372, 0, 0, new Color(200, 50, 200));
 	final static double timeCon = 100;
