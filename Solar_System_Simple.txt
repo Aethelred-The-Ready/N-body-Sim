@@ -1,4 +1,4 @@
-6.0 0.000000001
+true 6.0 0.000000001
 //Name	Mass		Radius		Dist x		Dist Y	Dist Z	Vel X	Vel Y	Vel Z	Rot Rate	R	G	B
 Sol 	1.327124E20 695700000 	0 			0 		0 		0 		0 		0 		9 			255 255 0
 Mercury 2.2032E13 	4879000 	45.75E9 	0 		4808E6 	0 		58980 	0 		1407.6 		200 127 200

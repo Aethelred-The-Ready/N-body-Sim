@@ -136,7 +136,7 @@ public class ApproxRunner {
 			System.out.print(e);
 			f = new Scanner("\\Not working");
 		}
-		//molsInit();
+		boolean exact = f.nextBoolean();
 		radScale = f.nextDouble();
 		posScale = f.nextDouble();
 		int t = 0;
@@ -149,7 +149,6 @@ public class ApproxRunner {
 			if(name.charAt(0) == '/') {
 				f.nextLine();
 			}else {
-				boolean exact = true;
 				if(exact) {
 					oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
 					System.out.println(t + ": " + oBs.get(t));
@@ -169,32 +168,9 @@ public class ApproxRunner {
 					
 					OrbitalBody Parent = getOBFromString(parent);
 					
-					System.out.println(Parent);
 					
 					if(Parent != null) {
-					
-						Vector3D P = new Vector3D(
-								((Math.cos(lA) * Math.cos(lP - lA)) - (Math.sin(lA) * Math.cos(iN) * Math.cos(lP - lA))),
-								((Math.sin(lA) * Math.cos(lP - lA)) + (Math.cos(lA) * Math.cos(iN) * Math.sin(lP - lA))),
-								(Math.sin(iN) * Math.sin(lP - lA)));
-						
-						Vector3D Q = new Vector3D(
-								((- (Math.cos(lA) * Math.sin(lP - lA))) - (Math.sin(lA) * Math.cos(iN) * Math.cos(lP - lA))),
-								((- (Math.sin(lA) * Math.sin(lP - lA))) + (Math.cos(lA) * Math.cos(iN) * Math.cos(lP - lA))),
-								(Math.sin(iN) * Math.cos(lP - lA)));
-						
-						double rs = (sM * (1 - eC * eC)) / (1 + eC * Math.cos(v0));
-						
-						Vector3D R = Vector3D.add(Vector3D.sdot((rs * Math.cos(v0)), P), Vector3D.sdot((rs * Math.sin(v0)), Q));
-					
-						Vector3D V = Vector3D.sdot(
-								Math.sqrt(Parent.getGMass()/(sM * (1 - eC * eC))), 
-								Vector3D.add(Vector3D.sdot(-Math.sin(v0), P),
-											 Vector3D.sdot((eC + Math.cos(v0)), Q)));
-						System.out.println("Pos: " + R + "\nVel: " + V);
-						
-						oBs.add(new OrbitalBody(name, GM, rD, R.x, R.y, R.z, V.x, V.y, V.z, rO, col));
-						
+						oBs.add(new OrbitalBody(name, GM, rD, Parent, eC, sM, iN, lA, lP, v0, rO, col));
 					}else {
 						oBs.add(new OrbitalBody(name, GM, rD, 0, 0, 0, 0, 0 ,0, rO, col));
 						
@@ -208,17 +184,6 @@ public class ApproxRunner {
 		for(int i = 0;i < oBs.size();i++) {
 			trails[i] = new LinkedList<xyz>();
 		}
-		
-		//String name = f.next();
-		//oBs.add(new OrbitalBody(name, f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), f.nextDouble(), new Color(f.nextInt(), f.nextInt(), f.nextInt())));
-		//for(int i = 0;i < 25;i++) {
-		//	oBs.add(new OrbitalBody("Object: " + i, Math.random()*1E15, 1E6, Math.random()*1E11 - 5E10, Math.random()*1E11 - 5E10, Math.random()*1E5 - 5E4, Math.random()*1E5 - 5E4, new Color(120, 120, 120)));
-		//}
-		//focus = oBs.get(1);
-		
-		//render();
-		
-		//t.start();
 		
 		long startTime = System.currentTimeMillis();
 		
@@ -301,7 +266,6 @@ public class ApproxRunner {
 				}
 			}
 		}while(left > 0);*/
-		
 		for(int i = 0; i < oBs.size(); i++) {
 			
 			for(int k = 0; k < oBs.size(); k++) {
@@ -352,24 +316,6 @@ public class ApproxRunner {
 		
 	}
 	
-	//Calculates collision between 2 bodies
-	//Shouldn't happen often, mostly for fun
-	//Forms a new orbital body with the mass of both, does not simulate breaking
-	//Returns the body as a, b should then be deleted.
-	private static void coll(OrbitalBody a, OrbitalBody b) {
-		OrbitalBody n = new OrbitalBody("",a.getGMass() + b.getGMass(),Math.cbrt(Math.pow(a.getRad(), 3) + Math.pow(b.getRad(), 3)),0,0,0,a.getPos()[0],a.getPos()[1],a.getPos()[2], 20, Color.BLUE);
-		double[] acc = new double[3];
-		acc[0] = (a.getVel()[0]*a.getGMass() + b.getVel()[0]*b.getGMass()) / n.getGMass();
-		acc[1] = (a.getVel()[1]*a.getGMass() + b.getVel()[1]*b.getGMass()) / n.getGMass();
-		acc[2] = (a.getVel()[2]*a.getGMass() + b.getVel()[2]*b.getGMass()) / n.getGMass();
-		n.applyAcc(acc, 1);
-		a.changeTo(n);
-	}
-	
-	private static Color avgCol(Color a, Color b) {
-		return new Color((a.getRed() + b.getRed())/2,(a.getGreen() + b.getGreen())/2,(a.getBlue() + b.getBlue())/2);
-	}
-
 	private static void render(){
 		JFrame frame = new JFrame("Orbital approximator");
 		
@@ -516,7 +462,7 @@ public class ApproxRunner {
 	private static void save() {
 		try {
 			FileWriter fw = new FileWriter("save.txt", false);
-			String tw = radScale + " " + posScale + "\n";
+			String tw = "true " + radScale + " " + posScale + "\n";
 			for(OrbitalBody ob : oBs) {
 				tw += (ob.toString() + "\n");
 			}

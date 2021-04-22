@@ -28,6 +28,66 @@ public class OrbitalBody {
 		name = n;
 	}
 	
+	/**
+	 * Creates an orbitalBody by the 6 orbital elements. Only for circular orbits, so ecc is unescessary.
+	 * @param n name
+	 * @param m mass
+	 * @param r radius
+	 * @param parent the object this orbits around
+	 * @param ecc eccentricity
+	 * @param a semi-major axis in m 
+	 * @param inc inclination in degrees
+	 * @param lon longitude of ascending node in degrees
+	 * @param arg argument of periapsis in degrees
+	 * @param ano true anomaly in seconds
+	 * @param c
+	 */
+	public OrbitalBody(String n, double m, double r, OrbitalBody parent, double ecc, double a, double inc, double lon, double arg, double ano, double sp, Color c) {
+		name = n;
+		GM = m;
+		radius = r;
+		col = c;
+		
+		double Mt = ano;//*Math.sqrt(parent.GM/a);
+		
+		double Et = (Mt * Math.PI)/180;
+		for(int i = 20;i >= 0;i--) {
+			Et = Et - ((Et - ecc * Math.sin(Et) - Mt)/(1 - ecc * Math.cos(Et)));
+		}
+		
+		double Vt = 2 * Math.atan2(Math.sin(Math.toRadians(Mt)/2), Math.cos(Math.toRadians(Mt)/2));
+		
+		double[] o = new double[3];
+		
+		o[0] = a * Math.cos(Vt);
+		o[1] = a * Math.sin(Vt);
+		o[2] = 0;
+		
+		double[] oV = new double[3];
+		
+		oV[0] = -(Math.sqrt(parent.GM * a)/a) * Math.sin(Math.toRadians(Mt));
+		oV[1] = (Math.sqrt(parent.GM * a)/a) * Math.cos(Math.toRadians(Mt));
+		oV[2] = 0;
+		
+		pos[0] = o[0]*(c(arg)*c(lon) - s(arg)*c(inc)*s(lon)) - o[1]*(s(arg)*c(lon) - c(arg)*c(inc)*s(lon));
+		pos[1] = o[0]*(c(arg)*s(lon) - s(arg)*c(inc)*c(lon)) - o[1]*(c(arg)*c(inc)*c(lon) - s(arg)*s(lon));
+		pos[2] = o[0]*(s(arg)*s(inc)) - o[1]*(c(arg)*s(inc));
+		
+
+		vel[0] = oV[0]*(c(arg)*c(lon) - s(arg)*c(inc)*s(lon)) - oV[1]*(s(arg)*c(lon) - c(arg)*c(inc)*s(lon));
+		vel[1] = oV[0]*(c(arg)*s(lon) - s(arg)*c(inc)*c(lon)) - oV[1]*(c(arg)*c(inc)*c(lon) - s(arg)*s(lon));
+		vel[2] = oV[0]*(s(arg)*s(inc)) - oV[1]*(c(arg)*s(inc));
+		
+	}
+	
+	private double c(double v) {
+		return Math.cos(Math.toRadians(v));
+	}
+	
+	private double s(double v) {
+		return Math.sin(Math.toRadians(v));
+	}
+	
 	public OrbitalBody copy() {
 		return new OrbitalBody(name, GM, radius, pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], spin, col);
 	}

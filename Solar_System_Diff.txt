@@ -1,4 +1,4 @@
-6.0 0.000000001
+true 6.0 0.000000001
 //Name  Mass		Radius	semiMaj	eccen	incl	longAsc longPer	meanLong	Rot		RGB			Parent
 Sol 	1.9885E27 	695.7E6 0 		0 		0 		0 		0 		0			0		255 255 0	Sol
 Mercury 3.3E23		2.43E3	57.9E9	0.2056	0.122	0.843	1.352	252.25		1407.6	200 127 200	Sol
