@@ -28,6 +28,10 @@ public class OrbitalBody {
 		name = n;
 	}
 	
+	public OrbitalBody copy() {
+		return new OrbitalBody(name, GM, radius, pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], spin, col);
+	}
+	
 	public void changeTo(OrbitalBody a) {
 		GM = a.GM;
 		radius = a.radius;

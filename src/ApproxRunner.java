@@ -223,8 +223,10 @@ public class ApproxRunner {
 		long startTime = System.currentTimeMillis();
 		
 		r.run();
+		int b = 0;
 		while(true) {
 			if(!paused && !wentWrong) {
+				b++;
 				runner();
 				count+=timeCon;
 				if(count%31556926 == 0) {
@@ -270,12 +272,37 @@ public class ApproxRunner {
 
 	//calculates the gravity from every body to every other one and applies it
 	private static void runner() {
-		s = "";
-		//ExecutorService calcs = Executors.newFixedThreadPool(oBs.size());
-		//ArrayList<Future<OrbitalBody>> oBsCalcs = new ArrayList<Future<OrbitalBody>>();
+		/*
+		ArrayList<Thread> threads = new ArrayList<Thread>(oBs.size());
+		ArrayList<OrbitalBody> prevOBs = new ArrayList<OrbitalBody>(oBs.size());
+		for(int i = 0;i < oBs.size();i++){
+			prevOBs.add(oBs.get(i).copy());
+		}
+		int divs = 8;
+		int prevStart = 0;
+		while(true){
+			int nextStart = Math.min(oBs.size(), prevStart + oBs.size()/divs);
+			if(prevStart >= nextStart) {
+				break;
+			}
+			Runnable task = new Calculator(prevOBs, oBs.subList(prevStart, nextStart), timeCon);
+			Thread worker = new Thread(task);
+			worker.start();
+			threads.add(worker);
+			prevStart = nextStart;
+		}
+		int left = 0;
+		do {
+			Thread.yield();
+			left = 0;
+			for(Thread t : threads) {
+				if(t.isAlive()) {
+					left++;
+				}
+			}
+		}while(left > 0);*/
+		
 		for(int i = 0; i < oBs.size(); i++) {
-			
-			//oBsCalcs.add((Future<OrbitalBody>) calcs.submit(new Calculator(oBs, i, timeCon, reposCon)));
 			
 			for(int k = 0; k < oBs.size(); k++) {
 				if(k != i) {
@@ -288,17 +315,6 @@ public class ApproxRunner {
 			//System.out.println("All good with: " + oBs.get(i));
 			oBs.get(i).tickVel(timeCon);
 		}
-		
-		/*for(int i = 0; i < oBs.size(); i++) {
-			try {
-				oBs.set(i, oBsCalcs.get(i).get());
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (ExecutionException e) {
-				e.printStackTrace();
-			}
-		}
-		calcs.shutdown();*/
 		//Rocket.tickVel(timeCon);
 		curTime.tick(timeCon);
 	}

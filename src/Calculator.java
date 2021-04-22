@@ -1,26 +1,27 @@
 import java.util.ArrayList;
+import java.util.List;
 
-public class Calculator extends Thread{
-	private ArrayList<OrbitalBody> oBs;
-	int object;
+public class Calculator extends Thread {
+	private List<OrbitalBody> oBs;
+	List<OrbitalBody> objects;
 	double timeCon;
-	double reposCon;
 	
-	public Calculator(ArrayList<OrbitalBody> toBs, int tobject, double ttimeCon, double treposCon) {
+	public Calculator(List<OrbitalBody> toBs, List<OrbitalBody> list, double ttimeCon) {
 		oBs = toBs;
-		object = tobject;
+		objects = list;
 		timeCon = ttimeCon;
-		reposCon = treposCon;
-		
-		System.out.println(oBs);
-		
-		for(int i = 0; i < reposCon/timeCon;i++) {
-			oBs.get(object).applyAcc(grav(oBs.get(object), oBs.get(i)), timeCon);
-		}
 	}
 	
-	public OrbitalBody call() {
-		return oBs.get(object);
+	public void run() {
+		for(int i = 0;i < objects.size();i++) {
+			for(int k = 0; k < oBs.size();k++) {
+				if(oBs.get(k).getName() == objects.get(i).getName()) {
+					continue;
+				}
+				objects.get(i).applyAcc(grav(objects.get(i), oBs.get(k)), timeCon);
+			}
+			objects.get(i).tickVel(timeCon);
+		}
 	}
 	
 	//calculates the gravitational acceleration vector's x and y components from body 1 to body 2
@@ -48,6 +49,7 @@ public class Calculator extends Thread{
 		return tr;
 	}
 	
+	//Returns the difference in xyz position of oB and oB2
 	private static double[] dN(OrbitalBody oB, OrbitalBody oB2) {
 		double[] a = oB.getPos();
 		double[] b = oB2.getPos();
