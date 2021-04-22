@@ -17,12 +17,6 @@ public class Time {
 		sec = s;
 	}
 	
-	public void tick(double secs) {
-		for(int i = 0; i < secs;i++) {
-			tick();
-		}
-	}
-	
 	public void tick() {
 		sec++;
 		if(sec == 60) {
