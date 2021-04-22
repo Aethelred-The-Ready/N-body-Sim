@@ -5,6 +5,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -22,8 +26,9 @@ public class ApproxRunner {
 	static Molecule[] mols;//Common atmospheric molecules
 	static ArrayList<OrbitalBody> oBs = new ArrayList<OrbitalBody>();
 	static OrbitalBody Rocket = new OrbitalBody("Rocket", 5E3, 1E6, 147.41639E9, 0, 0, 0, 31372, 0, 0, new Color(200, 50, 200));
-	final static double timeCon = 1;
-	static boolean paused = false;
+	final static double timeCon = 100;
+	final static double reposCon = 1000;
+	static boolean paused = true;
 	static double scale = 1;
 	static double posScale = 0.000000001d;
 	static double radScale = 8;
@@ -86,6 +91,7 @@ public class ApproxRunner {
 				zaxis = !zaxis;
 			}else if(e.getKeyCode() == KeyEvent.VK_C) {
 				save();
+				clearTrails();
 			}else if(e.getKeyCode() == KeyEvent.VK_X) {
 				focused = !focused;
 			}else if(e.getKeyCode() == KeyEvent.VK_T) {
@@ -266,7 +272,12 @@ public class ApproxRunner {
 	//calculates the gravity from every body to every other one and applies it
 	private static void runner() {
 		s = "";
+		//ExecutorService calcs = Executors.newFixedThreadPool(oBs.size());
+		//ArrayList<Future<OrbitalBody>> oBsCalcs = new ArrayList<Future<OrbitalBody>>();
 		for(int i = 0; i < oBs.size(); i++) {
+			
+			//oBsCalcs.add((Future<OrbitalBody>) calcs.submit(new Calculator(oBs, i, timeCon, reposCon)));
+			
 			for(int k = 0; k < oBs.size(); k++) {
 				if(k != i) {
 					oBs.get(i).applyAcc(grav(oBs.get(i), oBs.get(k)), timeCon);
@@ -278,8 +289,19 @@ public class ApproxRunner {
 			//System.out.println("All good with: " + oBs.get(i));
 			oBs.get(i).tickVel(timeCon);
 		}
+		
+		/*for(int i = 0; i < oBs.size(); i++) {
+			try {
+				oBs.set(i, oBsCalcs.get(i).get());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+			}
+		}
+		calcs.shutdown();*/
 		//Rocket.tickVel(timeCon);
-		curTime.tick();
+		curTime.tick(timeCon);
 	}
 	
 	//calculates the gravitational acceleration vector's x and y components from body 1 to body 2
@@ -350,7 +372,7 @@ public class ApproxRunner {
 				p.fillRect(0, 0, 2000, 2000);
 				p.setColor(Color.BLACK);
 				p.fillRect(0, 0, 200, 100);
-				p.setColor(Color.RED);
+				p.setColor(new Color(25,0,0));
 				for(int i = 0;i <= 20;i++) {
 					p.drawLine(i*100, 0, i*100, 2000);
 					p.drawLine(0, i*100, 2000, i*100);
@@ -360,13 +382,17 @@ public class ApproxRunner {
 					ArrayList<OrbitalBody> oBsTemp = new ArrayList<OrbitalBody>();
 					for(int i = 0;i < oBs.size();i++) {
 						oBsTemp.add(oBs.get(i));
+						double scaling = ((oBs.get(i).getPos()[1] + 7.4E14) / 7.4E14);
+						System.out.println(oBs.get(i).getName() + ": " + (oBs.get(i).getPos()[1]) + ", "+ scaling);
 					}
 					Collections.sort(oBsTemp, OrbitalBody.ySort);
 					for(int i = 0;i < oBsTemp.size();i++) {
 						oBcur = oBsTemp.get(i);
 						p.setColor(oBcur.getCol());
+						double scaling = ((oBs.get(i).getPos()[1] + 7.4E14) / 7.4E14);
 						//log radius calculator
-						rad = (int) (Math.log10(oBcur.getRad()/100)*radScale);
+						rad = (int) (Math.log10(oBcur.getRad()/100)*radScale*scaling);
+						//System.out.println(oBs.get(i).getName() + ": " + rad);
 						x = (int) (scale(oBcur.getPos()[0], rad, 0));
 						y = (int) (scale(oBcur.getPos()[2], rad, 2));
 						p.fillOval(x, y, rad, rad);
@@ -395,7 +421,7 @@ public class ApproxRunner {
 						
 						p.fillOval(x, y, rad, rad);
 						trails[i].addFirst(new xyz(x + rad/2, y + rad/2, 0));
-						if(count > 10000000) {
+						if(count > 1000000000) {
 							trails[i].removeLast();
 						}
 						
@@ -416,7 +442,7 @@ public class ApproxRunner {
 						double rad2 = rad/2;
 						x+=rad2;
 						y+=rad2;
-						p.drawLine((int) (x + rad2*Math.sin(oBcur.getCurRot())), (int) (y + rad2*Math.cos(oBcur.getCurRot())), (int) (x - rad2*Math.sin(oBcur.getCurRot())), (int) (y - rad2*Math.cos(oBcur.getCurRot())));
+						//p.drawLine((int) (x + rad2*Math.sin(oBcur.getCurRot())), (int) (y + rad2*Math.cos(oBcur.getCurRot())), (int) (x - rad2*Math.sin(oBcur.getCurRot())), (int) (y - rad2*Math.cos(oBcur.getCurRot())));
 						
 						
 						
@@ -485,6 +511,12 @@ public class ApproxRunner {
 			fw.close();
 		} catch (IOException e) {
 			System.out.print("" + e);
+		}
+	}
+	
+	private static void clearTrails() {
+		for(int i = 0;i < trails.length;i++) {
+			trails[i].removeAll(trails[i]);
 		}
 	}
 }
